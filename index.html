@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Quiz Master</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f2f7ff;
+      color: #333;
+      padding: 20px;
+      text-align: center;
+    }
+    h1 { color: #2a2eec; }
+    button {
+      padding: 10px 20px;
+      background: #2a2eec;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin: 5px;
+      transition: background 0.3s ease;
+    }
+    button:hover { background: #1e22aa; }
+    .option {
+      margin: 10px auto;
+      padding: 12px;
+      width: 90%;
+      max-width: 400px;
+      background: #fff;
+      border: 2px solid #ddd;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .option:hover {
+      background: #e0eaff;
+      border-color: #2a2eec;
+    }
+    #admin, #quiz, #result { display: none; margin-top: 20px; }
+    input[type="text"], input[type="number"] {
+      padding: 8px;
+      margin: 5px;
+      width: 80%;
+      max-width: 400px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    #timer { font-weight: bold; margin-bottom: 15px; }
+  </style>
+</head>
+<body>
+  <h1>Quiz Master</h1>
+  <button onclick="showAdmin()">Admin Panel</button>
+  <button onclick="startQuiz()">Start Quiz</button>
+
+  <div id="admin">
+    <h2>Add a New Question</h2>
+    <input id="qText" type="text" placeholder="Enter question"><br>
+    <input id="opt1" type="text" placeholder="Option 1"><br>
+    <input id="opt2" type="text" placeholder="Option 2"><br>
+    <input id="opt3" type="text" placeholder="Option 3"><br>
+    <input id="opt4" type="text" placeholder="Option 4"><br>
+    <input id="correct" type="number" placeholder="Correct option number (1-4)"><br>
+    <button onclick="addQuestion()">Save Question</button>
+    <button onclick="hideAdmin()">Close Panel</button>
+  </div>
+
+  <div id="quiz">
+    <div id="timer">Time Left: <span id="time">30</span>s</div>
+    <h3 id="question-number"></h3>
+    <div id="qBox"></div>
+    <div id="options"></div>
+  </div>
+
+  <div id="result">
+    <h2>Quiz Completed!</h2>
+    <div id="score"></div>
+    <button onclick="location.reload()">Restart</button>
+  </div>
+
+  <script>
+    let questions = JSON.parse(localStorage.getItem('questions') || '[]');
+    let current = 0, score = 0, timer;
+
+    function showAdmin() {
+      document.getElementById('admin').style.display = 'block';
+    }
+
+    function hideAdmin() {
+      document.getElementById('admin').style.display = 'none';
+    }
+
+    function addQuestion() {
+      const q = document.getElementById('qText').value.trim();
+      const options = [1,2,3,4].map(i => document.getElementById('opt'+i).value.trim());
+      const correct = parseInt(document.getElementById('correct').value) - 1;
+      if (q && options.every(o => o !== '') && correct >= 0 && correct < 4) {
+        questions.push({ question: q, options, answer: correct });
+        localStorage.setItem('questions', JSON.stringify(questions));
+        alert('Question added successfully!');
+      } else {
+        alert('Please fill all fields correctly.');
+      }
+    }
+
+    function startQuiz() {
+      if (questions.length === 0) return alert('No questions found. Please add some!');
+      document.getElementById('quiz').style.display = 'block';
+      current = 0;
+      score = 0;
+      showQuestion();
+      let time = 30;
+      timer = setInterval(() => {
+        time--;
+        document.getElementById('time').innerText = time;
+        if (time <= 0) finishQuiz();
+      }, 1000);
+    }
+
+    function showQuestion() {
+      const q = questions[current];
+      document.getElementById('question-number').innerText = `Question ${current + 1} of ${questions.length}`;
+      document.getElementById('qBox').innerText = q.question;
+      const opts = document.getElementById('options');
+      opts.innerHTML = '';
+      q.options.forEach((opt, i) => {
+        const btn = document.createElement('div');
+        btn.className = 'option';
+        btn.innerText = opt;
+        btn.onclick = () => {
+          if (i === q.answer) score++;
+          current++;
+          if (current < questions.length) showQuestion();
+          else finishQuiz();
+        };
+        opts.appendChild(btn);
+      });
+    }
+
+    function finishQuiz() {
+      clearInterval(timer);
+      document.getElementById('quiz').style.display = 'none';
+      document.getElementById('result').style.display = 'block';
+      document.getElementById('score').innerText = `You scored ${score} out of ${questions.length}`;
+    }
+  </script>
+</body>
+</html>
+<section id="contact">
+    <h2>Contact Us</h2>
+    <p>Email:chowdhury838gmail.com</p>
+    <p>Phone:+8801304865313</p>
+  </section>
+
+  <footer>
+    <p>&copy; 2025 QUIZ MASTER. All rights reserved.</p>
+  </footer>
+</body>
+</html>
